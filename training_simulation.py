@@ -4,15 +4,12 @@ import random
 import timeit
 import os
 
-# phase codes based on environment.net.xml
+# phase codes based on incrocio_prova.net.xml
 PHASE_NS_GREEN = 0  # action 0 code 00
 PHASE_NS_YELLOW = 1
-PHASE_NSL_GREEN = 2  # action 1 code 01
-PHASE_NSL_YELLOW = 3
-PHASE_EW_GREEN = 4  # action 2 code 10
-PHASE_EW_YELLOW = 5
-PHASE_EWL_GREEN = 6  # action 3 code 11
-PHASE_EWL_YELLOW = 7
+PHASE_EW_GREEN = 2  # action 2 code 10
+PHASE_EW_YELLOW = 3
+
 
 
 class Simulation:
@@ -124,7 +121,7 @@ class Simulation:
         """
         Retrieve the waiting time of every car in the incoming roads
         """
-        incoming_roads = ["E2TL", "N2TL", "W2TL", "S2TL"]
+        incoming_roads = ["East2Traffighlight", "North2TrafficLight", "WE2TrafficLight", "South2TrafficLight"]
         car_list = traci.vehicle.getIDList()
         for car_id in car_list:
             wait_time = traci.vehicle.getAccumulatedWaitingTime(car_id)
@@ -152,7 +149,7 @@ class Simulation:
         """
         Activate the correct yellow light combination in sumo
         """
-        yellow_phase_code = old_action * 2 + 1 # obtain the yellow phase code, based on the old action (ref on environment.net.xml)
+        yellow_phase_code = old_action  + 1 # obtain the yellow phase code, based on the old action (ref on environment.net.xml)
         traci.trafficlight.setPhase("TrafficLight", yellow_phase_code)
 
 
@@ -162,12 +159,8 @@ class Simulation:
         """
         if action_number == 0:
             traci.trafficlight.setPhase("TrafficLight", PHASE_NS_GREEN)
-        elif action_number == 1:
-            traci.trafficlight.setPhase("TrafficLight", PHASE_NSL_GREEN)
         elif action_number == 2:
             traci.trafficlight.setPhase("TrafficLight", PHASE_EW_GREEN)
-        elif action_number == 3:
-            traci.trafficlight.setPhase("TrafficLight", PHASE_EWL_GREEN)
 
 
     def _get_queue_length(self):
