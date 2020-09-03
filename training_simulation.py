@@ -149,7 +149,7 @@ class Simulation:
         """
         Activate the correct yellow light combination in sumo
         """
-        yellow_phase_code = old_action * 2 + 1 # obtain the yellow phase code, based on the old action (ref on environment.net.xml)
+        yellow_phase_code = old_action * 2  + 1 # obtain the yellow phase code, based on the old action (ref on environment.net.xml)
         traci.trafficlight.setPhase("TrafficLight", yellow_phase_code)
 
 
@@ -211,7 +211,7 @@ class Simulation:
 
             # finding the lane where the car is located 
             # x2TL_3 are the "turn left only" lanes
-            if lane_id == "W2TL_0" or lane_id == "W2TL_1" or lane_id == "W2TL_2":
+            if lane_id == "WE2TrafficLight_0" or lane_id == "WE2TrafficLight_1":
                 lane_group = 0
             elif lane_id == "W2TL_3":
                 lane_group = 1
