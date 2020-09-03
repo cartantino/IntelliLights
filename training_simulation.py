@@ -149,7 +149,7 @@ class Simulation:
         """
         Activate the correct yellow light combination in sumo
         """
-        yellow_phase_code = old_action  + 1 # obtain the yellow phase code, based on the old action (ref on environment.net.xml)
+        yellow_phase_code = old_action * 2 + 1 # obtain the yellow phase code, based on the old action (ref on environment.net.xml)
         traci.trafficlight.setPhase("TrafficLight", yellow_phase_code)
 
 
