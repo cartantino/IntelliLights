@@ -216,7 +216,6 @@ class Simulation:
                 lane_cell = 9
 
             # finding the lane where the car is located 
-            # x2TL_3 are the "turn left only" lanes
             if lane_id == "WE2TrafficLight_0":
                 lane_group = 0
             elif lane_id == "WE2TrafficLight_1":
