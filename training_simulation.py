@@ -72,7 +72,7 @@ class Simulation:
 
             # if the chosen phase is different from the last phase, activate the yellow phase
             if self._step != 0 and old_action != action:
-                print("New action is different, new  = " + str(action) + ", old = " + str(old_action))
+                #print("New action is different, new  = " + str(action) + ", old = " + str(old_action))
                 self._set_yellow_phase(old_action)
                 self._simulate(self._yellow_duration)
 
@@ -142,7 +142,6 @@ class Simulation:
         Decide wheter to perform an explorative or exploitative action, according to an epsilon-greedy policy
         """
         if random.random() < epsilon:
-            print("")
             return random.randint(0, self._num_actions - 1) # random action, exploration
         else:
             return np.argmax(self._Model.predict_one(state)) # the best action given the current state
@@ -153,7 +152,7 @@ class Simulation:
         Activate the correct yellow light combination in sumo
         """
         yellow_phase_code = old_action * 2  + 1 # obtain the yellow phase code, based on the old action (ref on environment.net.xml)
-        print("Yellow phase code : " + str(yellow_phase_code))
+        #print("Yellow phase code : " + str(yellow_phase_code))
         traci.trafficlight.setPhase("TrafficLight", yellow_phase_code)
 
 
@@ -164,10 +163,10 @@ class Simulation:
         
         if action_number == 0:
             traci.trafficlight.setPhase("TrafficLight", PHASE_NS_GREEN)
-            print("North South Green now")
+            #print("North South Green now")
         elif action_number == 1:
             traci.trafficlight.setPhase("TrafficLight", PHASE_EW_GREEN)
-            print("East West green now")
+            #print("East West green now")
 
 
     def _get_queue_length(self):
