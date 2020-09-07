@@ -4,10 +4,10 @@ import random
 import timeit
 import os
 
-# phase codes based on incrocio_prova.net.xml
-PHASE_NS_GREEN = 0  # action 0 code 00
+# phase codes based on incrocio_prova.net.xml, the actions are intended as put green phase of the traffic light, so we have two actions : NS Green, EW Green
+PHASE_NS_GREEN = 0  # Action 0
 PHASE_NS_YELLOW = 1
-PHASE_EW_GREEN = 2  # action 2 code 10
+PHASE_EW_GREEN = 2  # Action 1
 PHASE_EW_YELLOW = 3
 
 
@@ -68,9 +68,11 @@ class Simulation:
 
             # choose the light phase to activate, based on the current state of the intersection
             action = self._choose_action(current_state, epsilon)
+            
 
             # if the chosen phase is different from the last phase, activate the yellow phase
             if self._step != 0 and old_action != action:
+                print("New action is different, new  = " + str(action) + ", old = " + str(old_action))
                 self._set_yellow_phase(old_action)
                 self._simulate(self._yellow_duration)
 
@@ -140,7 +142,8 @@ class Simulation:
         Decide wheter to perform an explorative or exploitative action, according to an epsilon-greedy policy
         """
         if random.random() < epsilon:
-            return random.randint(0, self._num_actions - 1) # random action
+            print("")
+            return random.randint(0, self._num_actions - 1) # random action, exploration
         else:
             return np.argmax(self._Model.predict_one(state)) # the best action given the current state
 
@@ -150,6 +153,7 @@ class Simulation:
         Activate the correct yellow light combination in sumo
         """
         yellow_phase_code = old_action * 2  + 1 # obtain the yellow phase code, based on the old action (ref on environment.net.xml)
+        print("Yellow phase code : " + str(yellow_phase_code))
         traci.trafficlight.setPhase("TrafficLight", yellow_phase_code)
 
 
@@ -157,10 +161,13 @@ class Simulation:
         """
         Activate the correct green light combination in sumo
         """
+        
         if action_number == 0:
             traci.trafficlight.setPhase("TrafficLight", PHASE_NS_GREEN)
-        elif action_number == 2:
+            print("North South Green now")
+        elif action_number == 1:
             traci.trafficlight.setPhase("TrafficLight", PHASE_EW_GREEN)
+            print("East West green now")
 
 
     def _get_queue_length(self):
@@ -211,21 +218,21 @@ class Simulation:
 
             # finding the lane where the car is located 
             # x2TL_3 are the "turn left only" lanes
-            if lane_id == "WE2TrafficLight_0" or lane_id == "WE2TrafficLight_1":
+            if lane_id == "WE2TrafficLight_0":
                 lane_group = 0
-            elif lane_id == "W2TL_3":
+            elif lane_id == "WE2TrafficLight_1":
                 lane_group = 1
-            elif lane_id == "N2TL_0" or lane_id == "N2TL_1" or lane_id == "N2TL_2":
+            elif lane_id == "North2TrafficLight_0":
                 lane_group = 2
-            elif lane_id == "N2TL_3":
+            elif lane_id == "North2TrafficLight_1":
                 lane_group = 3
-            elif lane_id == "E2TL_0" or lane_id == "E2TL_1" or lane_id == "E2TL_2":
+            elif lane_id == "East2TrafficLight_0":
                 lane_group = 4
-            elif lane_id == "E2TL_3":
+            elif lane_id == "East2TrafficLight_1":
                 lane_group = 5
-            elif lane_id == "S2TL_0" or lane_id == "S2TL_1" or lane_id == "S2TL_2":
+            elif lane_id == "South2TrafficLight_0":
                 lane_group = 6
-            elif lane_id == "S2TL_3":
+            elif lane_id == "South2TrafficLight_1":
                 lane_group = 7
             else:
                 lane_group = -1
