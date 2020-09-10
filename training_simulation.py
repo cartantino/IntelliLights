@@ -164,7 +164,6 @@ class Simulation:
         """
         Activate the correct green light combination in sumo
         """
-        
         if action_number == 0:
             traci.trafficlight.setPhase("TrafficLight", PHASE_NS_GREEN)
             #print("North South Green now")
@@ -226,21 +225,21 @@ class Simulation:
                 lane_cell = 9
 
             # finding the lane where the car is located 
-            if lane_id == "WE2TrafficLight_0":
+            if lane_id == "WE2TrafficLight_0" or lane_id == "WE2TrafficLight_1":
                 lane_group = 0
-            elif lane_id == "WE2TrafficLight_1":
+            elif lane_id == "WE2TrafficLight_2":
                 lane_group = 1
-            elif lane_id == "North2TrafficLight_0":
+            elif lane_id == "North2TrafficLight_0" or lane_id == "North2TrafficLight_1":
                 lane_group = 2
-            elif lane_id == "North2TrafficLight_1":
+            elif lane_id == "North2TrafficLight_2":
                 lane_group = 3
-            elif lane_id == "East2TrafficLight_0":
+            elif lane_id == "East2TrafficLight_0" or lane_id == "East2TrafficLight_1":
                 lane_group = 4
-            elif lane_id == "East2TrafficLight_1":
+            elif lane_id == "East2TrafficLight_2":
                 lane_group = 5
-            elif lane_id == "South2TrafficLight_0":
+            elif lane_id == "South2TrafficLight_0" or lane_id == "South2TrafficLight_1":
                 lane_group = 6
-            elif lane_id == "South2TrafficLight_1":
+            elif lane_id == "South2TrafficLight_2":
                 lane_group = 7
             else:
                 lane_group = -1

@@ -7,8 +7,12 @@ import os
 # phase codes based on incrocio_prova.net.xml, the actions are intended as put green phase of the traffic light, so we have two actions : NS Green, EW Green
 PHASE_NS_GREEN = 0  # Action 0
 PHASE_NS_YELLOW = 1
-PHASE_EW_GREEN = 2  # Action 1
-PHASE_EW_YELLOW = 3
+PHASE_NSL_GREEN = 2 # Action 1
+PHASE_NSL_YELLOW = 3
+PHASE_EW_GREEN = 4  # Action 2
+PHASE_EW_YELLOW = 5
+PHASE_EWL_GREEN = 6 # Action 3
+PHASE_EWL_YELLOW = 7
 
 
 
@@ -131,14 +135,15 @@ class Simulation:
         """
         Activate the correct green light combination in sumo
         """
-
-
+    
         if action_number == 0:
             traci.trafficlight.setPhase("TrafficLight", PHASE_NS_GREEN)
-            #print("North South Green now")
         elif action_number == 1:
+            traci.trafficlight.setPhase("TrafficLight", PHASE_NSL_GREEN)
+        elif action_number == 2:
             traci.trafficlight.setPhase("TrafficLight", PHASE_EW_GREEN)
-            #print("East West green now")
+        elif action_number == 3:
+            traci.trafficlight.setPhase("TrafficLight", PHASE_EWL_GREEN)
 
 
     def _get_queue_length(self):
