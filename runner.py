@@ -33,23 +33,6 @@ def get_options():
     return options
 
 
-def run():
-    step = 0
-    traci.trafficlight.setPhase("gneJ6", 0)
-    while traci.simulation.getMinExpectedNumber() > 0:
-        traci.simulationStep()
-        if traci.trafficlight.getPhase("gneJ6") == 0:
-            # we are not already switching
-            if traci.inductionloop.getLastStepVehicleNumber("0") > 0:
-                # there is a vehicle from the west, switch
-                print("Arrivano auto da destra porca puttanaaaa!")
-                traci.trafficlight.setPhase("gneJ6", 2)
-            else:
-                # otherwise try to keep green for NS
-                traci.trafficlight.setPhase("gneJ6", 0)
-        step += 1
-    traci.close()
-    sys.stdout.flush()
 
 if __name__ == "__main__":
 
