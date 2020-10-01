@@ -61,6 +61,7 @@ class Simulation:
 
         while self._step < self._max_steps:
 
+            #ciao
             # get current state of the intersection
             current_state = self._get_state()
 
