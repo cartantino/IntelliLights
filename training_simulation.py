@@ -68,7 +68,7 @@ class Simulation:
             # waiting time = seconds waited by a car since the spawn in the environment, cumulated for every car in incoming lanes
             current_total_wait = self._collect_waiting_times()
             current_total_avg_speed = self._collect_avg_speed()
-            reward = (old_total_wait - current_total_wait) + (old_avg_speed - current_total_avg_speed)
+            reward = (old_total_wait - current_total_wait) 
             print("Reward of the previous action = ", reward, " given that old total wait is ", old_total_wait, " and current total wait ", current_total_wait)
 
             # saving the data into the memory
