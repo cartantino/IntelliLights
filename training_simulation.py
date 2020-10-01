@@ -32,6 +32,7 @@ class Simulation:
         self._reward_store = []
         self._cumulative_wait_store = []
         self._avg_queue_length_store = []
+        self._avg_speed_store = []
         self._training_epochs = training_epochs
 
 
@@ -52,6 +53,8 @@ class Simulation:
         self._sum_neg_reward = 0
         self._sum_queue_length = 0
         self._sum_waiting_time = 0
+        self._sum_avg_speed = 0
+        old_avg_speed = 0
         old_total_wait = 0
         old_state = -1
         old_action = -1
@@ -64,7 +67,9 @@ class Simulation:
             # calculate reward of previous action: (change in cumulative waiting time between actions)
             # waiting time = seconds waited by a car since the spawn in the environment, cumulated for every car in incoming lanes
             current_total_wait = self._collect_waiting_times()
-            reward = old_total_wait - current_total_wait
+            current_total_avg_speed = self._collect_avg_speed()
+            reward = (old_total_wait - current_total_wait) + (old_avg_speed - current_total_avg_speed)
+            print("Reward of the previous action = ", reward, " given that old total wait is ", old_total_wait, " and current total wait ", current_total_wait)
 
             # saving the data into the memory
             if self._step != 0:
@@ -88,12 +93,22 @@ class Simulation:
             old_state = current_state
             old_action = action
             old_total_wait = current_total_wait
+            old_avg_speed = current_total_avg_speed
 
             # saving only the meaningful reward to better see if the agent is behaving correctly
             if reward < 0:
+                print("Reward is < 0, Reward = ", reward)
                 self._sum_neg_reward += reward
+                print("Sum_Neg_Reward = ", self._sum_neg_reward)
+            else:
+                print('Positive reward : ', reward)
 
         self._save_episode_stats()
+        
+
+        print("Avg speed : ", self._avg_speed_store)
+        print("Cumulative wait store :", self._cumulative_wait_store)
+        print("Reward store : ", self.reward_store)
         print("Total reward:", self._sum_neg_reward, "- Epsilon:", round(epsilon, 2))
         traci.close()
         simulation_time = round(timeit.default_timer() - start_time, 1)
@@ -119,9 +134,10 @@ class Simulation:
             self._step += 1 # update the step counter
             steps_todo -= 1
             queue_length = self._get_queue_length()
+            avg_speed = self._get_avg_speed()
             self._sum_queue_length += queue_length
             self._sum_waiting_time += queue_length # 1 step while wating in queue means 1 second waited, for each car, therefore queue_lenght == waited_seconds
-
+            self._sum_avg_speed = (self._sum_avg_speed + avg_speed) / 2
 
     def _collect_waiting_times(self):
         """
@@ -139,6 +155,24 @@ class Simulation:
                     del self._waiting_times[car_id] 
         total_waiting_time = sum(self._waiting_times.values())
         return total_waiting_time
+
+    def _collect_avg_speed(self):
+        """
+        Retrieve the total average speed on the incoming roads
+        """
+        incoming_roads = ["East2Traffighlight", "North2TrafficLight", "WE2TrafficLight", "South2TrafficLight"]
+        car_list = traci.vehicle.getIDList()
+        speed = []
+        for car_id in car_list:
+            road_id = traci.vehicle.getRoadID(car_id)
+            if(road_id in incoming_roads):
+                speed.append(traci.vehicle.getSpeed(car_id))
+        
+        if(len(speed) > 0):
+            return sum(speed)/len(speed)
+        else:
+            return 0
+
 
 
     def _choose_action(self, state, epsilon):
@@ -188,6 +222,17 @@ class Simulation:
         halt_W = traci.edge.getLastStepHaltingNumber("WE2TrafficLight")
         queue_length = halt_N + halt_S + halt_E + halt_W
         return queue_length
+
+    def _get_avg_speed(self):
+        """
+        Retrieve the avg speed of cars withing the incoming lane
+        """
+        avg_N = traci.edge.getLastStepMeanSpeed("North2TrafficLight")
+        avg_S = traci.edge.getLastStepMeanSpeed("South2TrafficLight")
+        avg_E = traci.edge.getLastStepMeanSpeed("East2TrafficLight")
+        avg_W = traci.edge.getLastStepMeanSpeed("WE2TrafficLight")
+        avg_total = (avg_N + avg_S + avg_E + avg_W) / 4 #Average global speed incoming into the tl
+        return avg_total
 
 
     def _get_state(self):
@@ -294,7 +339,7 @@ class Simulation:
         self._reward_store.append(self._sum_neg_reward)  # how much negative reward in this episode
         self._cumulative_wait_store.append(self._sum_waiting_time)  # total number of seconds waited by cars in this episode
         self._avg_queue_length_store.append(self._sum_queue_length / self._max_steps)  # average number of queued cars per step, in this episode
-
+        self._avg_speed_store.append(self._sum_avg_speed)
 
     @property
     def reward_store(self):
@@ -310,3 +355,6 @@ class Simulation:
     def avg_queue_length_store(self):
         return self._avg_queue_length_store
 
+    @property
+    def avg_speed_store(self):
+        return self._avg_speed_store
