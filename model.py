@@ -35,7 +35,9 @@ class TrainModel:
         model.compile(loss=losses.mean_squared_error, optimizer=Adam(lr=self._learning_rate))
         return model
     
-
+    """
+    Predict one gives in output a vector containing the Q-Values for each action of the current episode.
+    """
     def predict_one(self, state):
         """
         Predict the action values from a single state
@@ -44,6 +46,9 @@ class TrainModel:
         return self._model.predict(state)
 
 
+    """
+    Predict batch gives in output a matrix containing the Q-Values for each episode within the batch given the action.
+    """
     def predict_batch(self, states):
         """
         Predict the action values from a batch of states
