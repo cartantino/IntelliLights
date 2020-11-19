@@ -61,7 +61,6 @@ class Simulation:
 
         while self._step < self._max_steps:
 
-            #ciao
             # get current state of the intersection
             current_state = self._get_state()
 
@@ -69,7 +68,8 @@ class Simulation:
             # waiting time = seconds waited by a car since the spawn in the environment, cumulated for every car in incoming lanes
             current_total_wait = self._collect_waiting_times()
             current_total_avg_speed = self._collect_avg_speed()
-            reward = (old_total_wait - current_total_wait) + (old_avg_speed - current_total_avg_speed)
+            reward = (old_total_wait - current_total_wait) # + (old_avg_speed - current_total_avg_speed)
+            print("Average speed reward value is = " + str(old_avg_speed - current_total_avg_speed), " given that old avg speed is = ", old_avg_speed, " and current total avg speed is", current_total_avg_speed)
             print("Reward of the previous action = ", reward, " given that old total wait is ", old_total_wait, " and current total wait ", current_total_wait)
 
             # saving the data into the memory
@@ -97,12 +97,11 @@ class Simulation:
             old_avg_speed = current_total_avg_speed
 
             # saving only the meaningful reward to better see if the agent is behaving correctly
+            # Negative reward incentivize to reach terminal state as quick as possible
             if reward < 0:
-                print("Reward is < 0, Reward = ", reward)
+                #print("Reward is < 0, Reward = ", reward)
                 self._sum_neg_reward += reward
-                print("Sum_Neg_Reward = ", self._sum_neg_reward)
-            else:
-                print('Positive reward : ', reward)
+
 
         self._save_episode_stats()
         
@@ -179,11 +178,12 @@ class Simulation:
     def _choose_action(self, state, epsilon):
         """
         Decide wheter to perform an explorative or exploitative action, according to an epsilon-greedy policy
+        Returns the indices of the maximum values along an axis.
         """
         if random.random() < epsilon:
             return random.randint(0, self._num_actions - 1) # random action, exploration
         else:
-            return np.argmax(self._Model.predict_one(state)) # the best action given the current state
+            return np.argmax(self._Model.predict_one(state)) # the best action given the current state, 
 
 
     def _set_yellow_phase(self, old_action):
@@ -232,7 +232,7 @@ class Simulation:
         avg_S = traci.edge.getLastStepMeanSpeed("South2TrafficLight")
         avg_E = traci.edge.getLastStepMeanSpeed("East2TrafficLight")
         avg_W = traci.edge.getLastStepMeanSpeed("WE2TrafficLight")
-        avg_total = (avg_N + avg_S + avg_E + avg_W) / 4 #Average global speed incoming into the tl
+        avg_total = (avg_N + avg_S + avg_E + avg_W) / 4 # Average global speed incoming into the tl
         return avg_total
 
 
@@ -301,7 +301,7 @@ class Simulation:
 
             if valid_car:
                 state[car_position] = 1  # write the position of the car car_id in the state array in the form of "cell occupied"
-
+            #print("current state = " + state)
         return state
 
 
@@ -310,14 +310,24 @@ class Simulation:
         Retrieve a group of samples from the memory and for each of them update the learning equation, then train
         """
         batch = self._Memory.get_samples(self._Model.batch_size)
-
+        print("*********Batch = ")
+        print(batch)
         if len(batch) > 0:  # if the memory is full enough
             states = np.array([val[0] for val in batch])  # extract states from the batch
             next_states = np.array([val[3] for val in batch])  # extract next states from the batch
 
+            print("Current states = " )
+            print(states)
+            print("Next states = ")
+            print(next_states)
+
             # prediction
             q_s_a = self._Model.predict_batch(states)  # predict Q(state), for every sample
             q_s_a_d = self._Model.predict_batch(next_states)  # predict Q(next_state), for every sample
+            print("q_s_a = " )
+            print(np.matrix(q_s_a))
+            print("q_s_a_d = ")
+            print(np.matrix(q_s_a_d))
 
             # setup training arrays
             x = np.zeros((len(batch), self._num_states))
@@ -326,10 +336,10 @@ class Simulation:
             for i, b in enumerate(batch):
                 state, action, reward, _ = b[0], b[1], b[2], b[3]  # extract data from one sample
                 current_q = q_s_a[i]  # get the Q(state) predicted before
+                # amax return the max value along the axis
                 current_q[action] = reward + self._gamma * np.amax(q_s_a_d[i])  # update Q(state, action)
                 x[i] = state
                 y[i] = current_q  # Q(state) that includes the updated action value
-
             self._Model.train_batch(x, y)  # train the NN
 
 
