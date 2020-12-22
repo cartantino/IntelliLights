@@ -34,7 +34,6 @@ class TrainModel:
         x = layers.Dense(800, activation='relu')(x)
         x = layers.Dense(800, activation='relu')(x)
         x = layers.Dense(800, activation='relu')(x)
-        x = layers.Dropout(0.1)(x)
         x = layers.Dense(800, activation='relu')(x)
         x = layers.Dense(400, activation='relu')(x)
         x = layers.Dense(400, activation='relu')(x)
