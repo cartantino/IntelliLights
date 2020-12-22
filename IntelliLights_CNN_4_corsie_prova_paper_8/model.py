@@ -24,7 +24,7 @@ class TrainModel:
         self._model = self._build_model(num_layers, width)
 
         print(device_lib.list_local_devices())
-        config = tf.compat.v1.ConfigProto( device_count = {'GPU': 1 , 'CPU': 2} ) 
+        config = tf.compat.v1.ConfigProto( device_count = {'GPU': 1 , 'CPU': 4} ) 
         sess = tf.compat.v1.Session(config=config) 
         tf.compat.v1.keras.backend.set_session(sess)
 
