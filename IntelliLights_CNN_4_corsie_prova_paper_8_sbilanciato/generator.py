@@ -47,18 +47,22 @@ class TrafficGenerator:
 
             for car_counter, step in enumerate(car_gen_steps):
                 straight_or_turn = np.random.uniform()
-                if straight_or_turn < 0.75:  # choose direction: straight or turn - 75% of times the car goes straight
-                    route_straight = np.random.randint(1, 5)  # choose a random source & destination
-                    if route_straight == 1:
-                        print('    <vehicle id="W_E_%i" type="standard_car" route="W_E" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
-                    elif route_straight == 2:
-                        print('    <vehicle id="E_W_%i" type="standard_car" route="E_W" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
-                    elif route_straight == 3:
-                        print('    <vehicle id="N_S_%i" type="standard_car" route="N_S" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
+                if straight_or_turn < 0.85:  # choose direction: straight or turn - 75% of times the car goes straight
+                    unbalanced = np.random.uniform()
+                    if unbalanced < 0.85:
+                        route_straight = np.random.randint(1, 3)  # 0.7225
+                        if route_straight == 1:
+                            print('    <vehicle id="W_E_%i" type="standard_car" route="W_E" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
+                        elif route_straight == 2:
+                            print('    <vehicle id="E_W_%i" type="standard_car" route="E_W" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
                     else:
-                        print('    <vehicle id="S_N_%i" type="standard_car" route="S_N" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
+                        route_straight = np.random.randint(1, 3) # 0.1275
+                        if route_straight == 1:
+                            print('    <vehicle id="N_S_%i" type="standard_car" route="N_S" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
+                        elif route_straight == 2:
+                            print('    <vehicle id="S_N_%i" type="standard_car" route="S_N" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
                 else:  # car that turn -25% of the time the car turns
-                    route_turn = np.random.randint(1, 9)  # choose random source source & destination
+                    route_turn = np.random.randint(1, 9)  # 0.15
                     if route_turn == 1:
                         print('    <vehicle id="W_N_%i" type="standard_car" route="W_N" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
                     elif route_turn == 2:
