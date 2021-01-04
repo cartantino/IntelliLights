@@ -60,7 +60,7 @@ class TrafficGenerator:
                         if route_straight == 1:
                             print('    <vehicle id="N_S_%i" type="standard_car" route="N_S" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
                         elif route_straight == 2:
-                        print('    <vehicle id="S_N_%i" type="standard_car" route="S_N" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
+                            print('    <vehicle id="S_N_%i" type="standard_car" route="S_N" depart="%s" departLane="random" departSpeed="10" />' % (car_counter, step), file=routes)
                 else:  # car that turn -25% of the time the car turns
                     route_turn = np.random.randint(1, 9)  # choose random source source & destination
                     if route_turn == 1:
