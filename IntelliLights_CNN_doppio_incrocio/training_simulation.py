@@ -410,7 +410,7 @@ class Simulation:
 
             elif lane_id == "South2TrafficLight_01_0":
                 lane_group = 12
-            elif lane_id == "South2TrafficLight_01_1" 
+            elif lane_id == "South2TrafficLight_01_1":
                 lane_group = 13
             elif lane_id == "South2TrafficLight_01_2":
                 lane_group = 14
