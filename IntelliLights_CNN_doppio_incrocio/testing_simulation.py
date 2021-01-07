@@ -242,48 +242,68 @@ class Simulation:
         """
         Retrieve the state of the intersection from sumo, in the form of cell occupancy
         """
-
-        state = np.zeros((8,34,3), dtype=np.float32)
+        state = np.zeros((16,133,3), dtype=np.float32)
         car_list = traci.vehicle.getIDList()
-        cell_vel_time = np.zeros((8,34,3), dtype=np.float32)
-        velocities = np.zeros((272), dtype=np.float32)
-        times = np.zeros((272), dtype=np.float32)
-        lane_cell = 0
+        cell_vel_time = np.zeros((16,133,3), dtype=np.float32)
+        
+        velocities = np.zeros((2128), dtype=np.float32)
+        times = np.zeros((2128), dtype=np.float32)
 
         for car_id in car_list:
             lane_pos = traci.vehicle.getLanePosition(car_id)
             lane_id = traci.vehicle.getLaneID(car_id)
-            lane_pos = 800 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
+            lane_pos = 798 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
 
+            # distance in meters from the traffic light -> mapping into cells
+            lane_cell = 0
             flag = True
             initial_lane_pos = 6
             current_lane_pos = initial_lane_pos
             count = 0
-            while flag == True and current_lane_pos <= 800:
+            while flag == True and current_lane_pos <= 798:
                 if lane_pos < current_lane_pos:
                     lane_cell = count
                     flag = False
                 else: 
-                    count += 1
-                    current_lane_pos += initial_lane_pos + count
+                    current_lane_pos += initial_lane_pos
+                count += 1
 
             # finding the lane where the car is located 
-            if lane_id == "West2TrafficLight_01_0" or lane_id == "West2TrafficLight_01_1" or lane_id == "West2TrafficLight_01_2":
+            if lane_id == "West2TrafficLight_01_0":
                 lane_group = 0
-            elif lane_id == "West2TrafficLight_01_3":
+            elif lane_id == "West2TrafficLight_01_1":
                 lane_group = 1
-            elif lane_id == "North2TrafficLight_01_0" or lane_id == "North2TrafficLight_01_1" or lane_id == "North2TrafficLight_01_2":
+            elif lane_id == "West2TrafficLight_01_2":
                 lane_group = 2
-            elif lane_id == "North2TrafficLight_01_3":
+            elif lane_id == "West2TrafficLight_01_3":
                 lane_group = 3
-            elif lane_id == "East2TrafficLight_01_0" or lane_id == "East2TrafficLight_01_1" or lane_id == "East2TrafficLight_01_2":
+
+            elif lane_id == "North2TrafficLight_01_0":
                 lane_group = 4
-            elif lane_id == "East2TrafficLight_01_3":
+            elif lane_id == "North2TrafficLight_01_1":
                 lane_group = 5
-            elif lane_id == "South2TrafficLight_01_0" or lane_id == "South2TrafficLight_01_1" or lane_id == "South2TrafficLight_01_2":
+            elif lane_id == "North2TrafficLight_01_2":
                 lane_group = 6
-            elif lane_id == "South2TrafficLight_01_3":
+            elif lane_id == "North2TrafficLight_01_3":
                 lane_group = 7
+
+            elif lane_id == "East2TrafficLight_01_0":
+                lane_group = 8
+            elif lane_id == "East2TrafficLight_01_1":
+                lane_group = 9
+            elif lane_id == "East2TrafficLight_01_2":
+                lane_group = 10
+            elif lane_id == "East2TrafficLight_01_3":
+                lane_group = 11
+
+            elif lane_id == "South2TrafficLight_01_0":
+                lane_group = 12
+            elif lane_id == "South2TrafficLight_01_1" 
+                lane_group = 13
+            elif lane_id == "South2TrafficLight_01_2":
+                lane_group = 14
+            elif lane_id == "South2TrafficLight_01_3":
+                lane_group = 15
             else:
                 lane_group = -1
 
@@ -297,25 +317,26 @@ class Simulation:
             else:
                 valid_car = False  # flag for not detecting cars crossing the intersection or driving away from it
 
-        for i in range (0, 8):
-            for j in range (0,34):
+        for i in range (0, 16):
+            for j in range (0, 133):
                 if cell_vel_time[i][j][0] > 0:
                     # ci sono macchine nella cella
                     state[i][j][0] = 1 
                     if cell_vel_time[i][j][1] > 0 :
-                        # somma delle velocità di tutti veicoli maggiore di 0
-                        state[i][j][1] = cell_vel_time[i][j][1] / cell_vel_time[i][j][0]
-                        velocities[(i * 34) + j] = state[i][j][1]
-                        # media del tempo di attesa totale cumulato fino a quella cella
-                        state[i][j][2] = cell_vel_time[i][j][2] / cell_vel_time[i][j][0]
-                        times[(i * 34) + j] = state[i][j][2]
+                        # velocità istantanea in quella cella
+                        state[i][j][1] = cell_vel_time[i][j][1]
+                        
+                        velocities[(i * 133) + j] = state[i][j][1]
+                        # tempo di attesa totale cumulato fino a quella cella
+                        state[i][j][2] = cell_vel_time[i][j][2]
+                        times[(i * 133) + j] = state[i][j][2]
                     else:
                         # somma delle velocità di tutti veicoli uguale a 0
                         state[i][j][1] = 0 # There are cars but they are stuck
-                        # media del tempo di attesa totale cumulato fino a quella cella 
+                        # tempo di attesa totale cumulato fino a quella cella 
                         # è presente anche se la velocità è 0
-                        state[i][j][2] = cell_vel_time[i][j][2] / cell_vel_time[i][j][0]
-                        times[(i * 34) + j] = state[i][j][2]
+                        state[i][j][2] = cell_vel_time[i][j][2]
+                        times[(i * 133) + j] = state[i][j][2]
                 else:
                     # non ci sono macchine nella cella, tutti i valori sono a 0
                     state[i][j][0] = 0
@@ -323,67 +344,88 @@ class Simulation:
                     state[i][j][2] = 0
         
         if velocities.max(axis=0) != 0:
-            normalized_vel = (velocities - velocities.min(axis=0)) / (velocities.max(axis=0) - velocities.min(axis=0))
-            for i in range (0, 8):
-                for j in range (0, 34):
-                    state[i][j][1] = normalized_vel[(i * 10) + j]
+            # normalizzazione considerando i limiti di velocità impostati in generator.py
+            normalized_vel = (velocities - 0) / (25 - 0)
+            for i in range (0, 16):
+                for j in range (0, 133):
+                    state[i][j][1] = normalized_vel[(i * 133) + j]
 
         if times.max(axis=0) != 0:
             normalized_times = (times - times.min(axis=0)) / (times.max(axis=0) - times.min(axis=0))
-            for i in range (0, 8):
-                for j in range (0, 34):   
-                    state[i][j][2] = normalized_times[(i * 34) + j]
-
+            for i in range (0, 16):
+                for j in range (0, 133):   
+                    state[i][j][2] = normalized_times[(i * 133) + j]
 
         return state
+        
 
     def _get_state_2(self):
         """
-        Retrieve the state of the first intersection from sumo, in the form of cell occupancy
+        Retrieve the state of the intersection from sumo, in the form of cell occupancy
         """
-
-        state = np.zeros((8,34,3), dtype=np.float32)
+        state = np.zeros((16,133,3), dtype=np.float32)
         car_list = traci.vehicle.getIDList()
-        cell_vel_time = np.zeros((8,34,3), dtype=np.float32)
-        velocities = np.zeros((272), dtype=np.float32)
-        times = np.zeros((272), dtype=np.float32)
-        lane_cell = 0
+        cell_vel_time = np.zeros((16,133,3), dtype=np.float32)
+        
+        velocities = np.zeros((2128), dtype=np.float32)
+        times = np.zeros((2128), dtype=np.float32)
 
         for car_id in car_list:
             lane_pos = traci.vehicle.getLanePosition(car_id)
             lane_id = traci.vehicle.getLaneID(car_id)
-            lane_pos = 800 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
+            lane_pos = 798 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
 
+            # distance in meters from the traffic light -> mapping into cells
+            lane_cell = 0
             flag = True
             initial_lane_pos = 6
             current_lane_pos = initial_lane_pos
             count = 0
-            while flag == True and current_lane_pos <= 800:
+            while flag == True and current_lane_pos <= 798:
                 if lane_pos < current_lane_pos:
                     lane_cell = count
                     flag = False
                 else: 
-                    count += 1
-                    current_lane_pos += initial_lane_pos + count
+                    current_lane_pos += initial_lane_pos
+                count += 1
 
 
-            # finding the lane where the car is located 
-            if lane_id == "West2TrafficLight_02_0" or lane_id == "West2TrafficLight_02_1" or lane_id == "West2TrafficLight_02_2":
+           # finding the lane where the car is located 
+            if lane_id == "West2TrafficLight_02_0":
                 lane_group = 0
-            elif lane_id == "West2TrafficLight_02_3":
+            elif lane_id == "West2TrafficLight_02_1":
                 lane_group = 1
-            elif lane_id == "North2TrafficLight_02_0" or lane_id == "North2TrafficLight_02_1" or lane_id == "North2TrafficLight_02_2":
+            elif lane_id == "West2TrafficLight_02_2":
                 lane_group = 2
-            elif lane_id == "North2TrafficLight_02_3":
+            elif lane_id == "West2TrafficLight_02_3":
                 lane_group = 3
-            elif lane_id == "East2TrafficLight_02_0" or lane_id == "East2TrafficLight_02_1" or lane_id == "East2TrafficLight_02_2":
+
+            elif lane_id == "North2TrafficLight_02_0":
                 lane_group = 4
-            elif lane_id == "East2TrafficLight_02_3":
+            elif lane_id == "North2TrafficLight_02_1":
                 lane_group = 5
-            elif lane_id == "South2TrafficLight_02_0" or lane_id == "South2TrafficLight_02_1" or lane_id == "South2TrafficLight_02_2":
+            elif lane_id == "North2TrafficLight_02_2":
                 lane_group = 6
-            elif lane_id == "South2TrafficLight_02_3":
+            elif lane_id == "North2TrafficLight_02_3":
                 lane_group = 7
+
+            elif lane_id == "East2TrafficLight_02_0":
+                lane_group = 8
+            elif lane_id == "East2TrafficLight_02_1":
+                lane_group = 9
+            elif lane_id == "East2TrafficLight_02_2":
+                lane_group = 10
+            elif lane_id == "East2TrafficLight_02_3":
+                lane_group = 11
+
+            elif lane_id == "South2TrafficLight_02_0":
+                lane_group = 12
+            elif lane_id == "South2TrafficLight_02_1":
+                lane_group = 13
+            elif lane_id == "South2TrafficLight_02_2":
+                lane_group = 14
+            elif lane_id == "South2TrafficLight_02_3":
+                lane_group = 15
             else:
                 lane_group = -1
 
@@ -397,25 +439,26 @@ class Simulation:
             else:
                 valid_car = False  # flag for not detecting cars crossing the intersection or driving away from it
 
-        for i in range (0, 8):
-            for j in range (0,34):
+        for i in range (0, 16):
+            for j in range (0, 133):
                 if cell_vel_time[i][j][0] > 0:
                     # ci sono macchine nella cella
                     state[i][j][0] = 1 
                     if cell_vel_time[i][j][1] > 0 :
-                        # somma delle velocità di tutti veicoli maggiore di 0
-                        state[i][j][1] = cell_vel_time[i][j][1] / cell_vel_time[i][j][0]
-                        velocities[(i * 34) + j] = state[i][j][1]
-                        # media del tempo di attesa totale cumulato fino a quella cella
-                        state[i][j][2] = cell_vel_time[i][j][2] / cell_vel_time[i][j][0]
-                        times[(i * 34) + j] = state[i][j][2]
+                        # velocità istantanea in quella cella
+                        state[i][j][1] = cell_vel_time[i][j][1]
+                        
+                        velocities[(i * 133) + j] = state[i][j][1]
+                        # tempo di attesa totale cumulato fino a quella cella
+                        state[i][j][2] = cell_vel_time[i][j][2]
+                        times[(i * 133) + j] = state[i][j][2]
                     else:
                         # somma delle velocità di tutti veicoli uguale a 0
                         state[i][j][1] = 0 # There are cars but they are stuck
-                        # media del tempo di attesa totale cumulato fino a quella cella 
+                        # tempo di attesa totale cumulato fino a quella cella 
                         # è presente anche se la velocità è 0
-                        state[i][j][2] = cell_vel_time[i][j][2] / cell_vel_time[i][j][0]
-                        times[(i * 34) + j] = state[i][j][2]
+                        state[i][j][2] = cell_vel_time[i][j][2]
+                        times[(i * 133) + j] = state[i][j][2]
                 else:
                     # non ci sono macchine nella cella, tutti i valori sono a 0
                     state[i][j][0] = 0
@@ -423,16 +466,17 @@ class Simulation:
                     state[i][j][2] = 0
         
         if velocities.max(axis=0) != 0:
-            normalized_vel = (velocities - velocities.min(axis=0)) / (velocities.max(axis=0) - velocities.min(axis=0))
-            for i in range (0, 8):
-                for j in range (0, 34):
-                    state[i][j][1] = normalized_vel[(i * 34) + j]
+            # normalizzazione considerando i limiti di velocità impostati in generator.py
+            normalized_vel = (velocities - 0) / (25 - 0)
+            for i in range (0, 16):
+                for j in range (0, 133):
+                    state[i][j][1] = normalized_vel[(i * 133) + j]
 
         if times.max(axis=0) != 0:
             normalized_times = (times - times.min(axis=0)) / (times.max(axis=0) - times.min(axis=0))
-            for i in range (0, 8):
-                for j in range (0, 34):   
-                    state[i][j][2] = normalized_times[(i * 34) + j]
+            for i in range (0, 16):
+                for j in range (0, 133):   
+                    state[i][j][2] = normalized_times[(i * 133) + j]
 
         return state
 

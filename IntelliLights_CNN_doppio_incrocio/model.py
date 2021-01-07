@@ -28,13 +28,11 @@ class TrainModel:
         Build and compile a fully connected deep neural network
         """
         model = models.Sequential()
-        model.add(layers.Conv2D(12, (2,2), activation='relu', strides=(1, 2), input_shape=(8, 34, 3)))
-        model.add(layers.Conv2D(16, (2,2), activation='relu', strides=(1, 2)))
+        model.add(layers.Conv2D(16, (2,2), activation='relu', strides=(1, 2), input_shape=(16, 133, 3)))
+        model.add(layers.Conv2D(32, (2,2), activation='relu', strides=(1, 2)))
         model.add(layers.Flatten())
-        model.add(layers.Dense(400, activation='relu'))
-        model.add(layers.Dense(400, activation='relu'))
-        model.add(layers.Dense(400, activation='relu'))
-        model.add(layers.Dense(400, activation='relu'))
+        model.add(layers.Dense(512, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
         model.add(layers.Dense(self._output_dim, activation='linear'))
 
         model.compile(loss=losses.mean_squared_error, optimizer=Adam(lr=self._learning_rate))
@@ -49,7 +47,7 @@ class TrainModel:
         """
         # print("Predict one, shape in input = " + str(state.shape))
         # state = np.reshape(state, [1, self._input_dim])
-        state = state.reshape(1, 8 , 34, 3)
+        state = state.reshape(1, 16, 133, 3)
         return self._model.predict(state)
 
 
@@ -60,7 +58,7 @@ class TrainModel:
         """
         Predict the action values from a batch of states
         """
-        states = states.reshape(self.batch_size, 8 , 34, 3)
+        states = states.reshape(self.batch_size, 16, 133, 3)
         return self._model.predict(states)
 
 
@@ -146,7 +144,7 @@ class TestModel:
         Predict the action values from a single state
         """
         # state = np.reshape(state, [1, self._input_dim])
-        state = state.reshape(1, 8 , 34, 3)
+        state = state.reshape(1, 16, 133, 3)
         return self._model.predict(state)
 
 
