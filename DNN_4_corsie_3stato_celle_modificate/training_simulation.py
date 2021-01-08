@@ -312,17 +312,17 @@ class Simulation:
                     state[i][j][1] = 0
                     state[i][j][2] = 0
         
-        if velocities.max(axis=0) != 0:
-            normalized_vel = (velocities - velocities.min(axis=0)) / (velocities.max(axis=0) - velocities.min(axis=0))
-            for i in range (0, 8):
-                for j in range (0, 34):
-                    state[i][j][1] = normalized_vel[(i * 34) + j]
+        # if velocities.max(axis=0) != 0:
+        #     normalized_vel = (velocities - velocities.min(axis=0)) / (velocities.max(axis=0) - velocities.min(axis=0))
+        #     for i in range (0, 8):
+        #         for j in range (0, 34):
+        #             state[i][j][1] = normalized_vel[(i * 34) + j]
 
-        if times.max(axis=0) != 0:
-            normalized_times = (times - times.min(axis=0)) / (times.max(axis=0) - times.min(axis=0))
-            for i in range (0, 8):
-                for j in range (0, 34):   
-                    state[i][j][2] = normalized_times[(i * 34) + j]
+        # if times.max(axis=0) != 0:
+        #     normalized_times = (times - times.min(axis=0)) / (times.max(axis=0) - times.min(axis=0))
+        #     for i in range (0, 8):
+        #         for j in range (0, 34):   
+        #             state[i][j][2] = normalized_times[(i * 34) + j]
         state = state.flatten()
         return state
 
