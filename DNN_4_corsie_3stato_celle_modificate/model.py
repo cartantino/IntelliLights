@@ -20,9 +20,7 @@ class TrainModel:
         self._batch_size = batch_size
         self._learning_rate = learning_rate
         self._model = self._build_model(num_layers, width)
-        config = tf.compat.v1.ConfigProto( device_count = {'GPU': 1 , 'CPU': 8} ) 
-        sess = tf.compat.v1.Session(config=config) 
-        tf.compat.v1.keras.backend.set_session(sess)
+
 
 
     def _build_model(self, num_layers, width):
