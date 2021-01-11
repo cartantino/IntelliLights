@@ -100,13 +100,17 @@ class Simulation:
             # saving only the meaningful reward to better see if the agent is behaving correctly
             # Negative reward incentivize to reach terminal state as quick as possible
             if reward < 0:
+                #print("Reward is < 0, Reward = ", reward)
                 self._sum_neg_reward += reward
 
 
         self._save_episode_stats()
         
 
-       
+        # print("Avg speed : ", self._avg_speed_store)
+        # print("Cumulative wait store :", self._cumulative_wait_store)
+        # print("Reward store : ", self.reward_store)
+        # print("Total reward:", self._sum_neg_reward, "- Epsilon:", round(epsilon, 2))
         traci.close()
         simulation_time = round(timeit.default_timer() - start_time, 1)
 
@@ -135,7 +139,7 @@ class Simulation:
             avg_speed = self._get_avg_speed()
             self._sum_queue_length += queue_length
             self._sum_waiting_time += queue_length # 1 step while wating in queue means 1 second waited, for each car, therefore queue_lenght == waited_seconds
-            self._sum_avg_speed = (self._sum_avg_speed + avg_speed)
+            self._sum_avg_speed = (self._sum_avg_speed + avg_speed) # / 2
         self._sum_avg_speed = self._sum_avg_speed / tot_steps
 
     def _collect_waiting_times(self):
@@ -200,8 +204,10 @@ class Simulation:
         """
         if action_number == 0:
             traci.trafficlight.setPhase("TrafficLight", PHASE_NS_GREEN)
+            #print("North South Green now")
         elif action_number == 1:
             traci.trafficlight.setPhase("TrafficLight", PHASE_NSL_GREEN)
+            #print("East West green now")
         elif action_number == 2:
             traci.trafficlight.setPhase("TrafficLight", PHASE_EW_GREEN)
         elif action_number == 3:
@@ -242,13 +248,34 @@ class Simulation:
         cell_vel_time = np.zeros((8,34,3), dtype=np.float32)
         velocities = np.zeros((272), dtype=np.float32)
         times = np.zeros((272), dtype=np.float32)
-        lane_cell = 0
 
         for car_id in car_list:
             lane_pos = traci.vehicle.getLanePosition(car_id)
             lane_id = traci.vehicle.getLaneID(car_id)
-            lane_pos = 800 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
+            lane_pos = 799 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
 
+            # distance in meters from the traffic light -> mapping into cells
+            # if lane_pos < 7:
+            #     lane_cell = 0
+            # elif lane_pos < 14:
+            #     lane_cell = 1
+            # elif lane_pos < 21:
+            #     lane_cell = 2
+            # elif lane_pos < 28:
+            #     lane_cell = 3
+            # elif lane_pos < 40:
+            #     lane_cell = 4
+            # elif lane_pos < 60:
+            #     lane_cell = 5
+            # elif lane_pos < 100:
+            #     lane_cell = 6
+            # elif lane_pos < 160:
+            #     lane_cell = 7
+            # elif lane_pos < 400:
+            #     lane_cell = 8
+            # elif lane_pos <= 800:
+            #     lane_cell = 9
+            lane_cell = 0
             flag = True
             initial_lane_pos = 6
             current_lane_pos = initial_lane_pos
@@ -281,11 +308,24 @@ class Simulation:
             else:
                 lane_group = -1
 
-            if lane_group >= 0 and lane_group <= 7:
+            if lane_group >= 1 and lane_group <= 7:
+                #car_position = int(str(lane_group) + str(lane_cell))  # composition of the two postion ID to create a number in interval 0-79
                 valid_car = True
+
                 cell_vel_time[lane_group][lane_cell][0] += 1
                 cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
                 cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
+
+            elif lane_group == 0:
+                #car_position = lane_cell
+                valid_car = True
+
+                cell_vel_time[lane_group][lane_cell][0] += 1
+                cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
+                cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
+
+            else:
+                valid_car = False  # flag for not detecting cars crossing the intersection or driving away from it
 
         for i in range (0, 8):
             for j in range (0, 34):
@@ -323,8 +363,8 @@ class Simulation:
             for i in range (0, 8):
                 for j in range (0, 34):   
                     state[i][j][2] = normalized_times[(i * 34) + j]
-        state = state.flatten()
-        return state
+
+        return state.flatten()
 
 
     def _replay(self):
@@ -332,13 +372,25 @@ class Simulation:
         Retrieve a group of samples from the memory and for each of them update the learning equation, then train
         """
         batch = self._Memory.get_samples(self._Model.batch_size)
+        # print("*********Batch = ")
+        # print(batch)
         if len(batch) > 0:  # if the memory is full enough
             states = np.array([val[0] for val in batch])  # extract states from the batch
             next_states = np.array([val[3] for val in batch])  # extract next states from the batch
 
+            # print("Current states = " )
+            # print(states)
+            # print("Next states = ")
+            # print(next_states)
+
             # prediction
             q_s_a = self._Model.predict_batch(states)  # predict Q(state), for every sample
             q_s_a_d = self._Model.predict_batch(next_states)  # predict Q(next_state), for every sample
+            # print("q_s_a = " )
+            # print(np.matrix(q_s_a))
+            # print("q_s_a_d = ")
+            # print(np.matrix(q_s_a_d))
+
             # setup training arrays
             x = np.zeros((len(batch), 816))
             y = np.zeros((len(batch), self._num_actions))

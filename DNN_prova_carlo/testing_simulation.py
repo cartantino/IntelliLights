@@ -167,23 +167,47 @@ class Simulation:
         cell_vel_time = np.zeros((8,34,3), dtype=np.float32)
         velocities = np.zeros((272), dtype=np.float32)
         times = np.zeros((272), dtype=np.float32)
-        lane_cell = 0
 
         for car_id in car_list:
             lane_pos = traci.vehicle.getLanePosition(car_id)
             lane_id = traci.vehicle.getLaneID(car_id)
-            lane_pos = 800 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
+            lane_pos = 799 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
+
+            # distance in meters from the traffic light -> mapping into cells
+            # if lane_pos < 7:
+            #     lane_cell = 0
+            # elif lane_pos < 14:
+            #     lane_cell = 1
+            # elif lane_pos < 21:
+            #     lane_cell = 2
+            # elif lane_pos < 28:
+            #     lane_cell = 3
+            # elif lane_pos < 40:
+            #     lane_cell = 4
+            # elif lane_pos < 60:
+            #     lane_cell = 5
+            # elif lane_pos < 100:
+            #     lane_cell = 6
+            # elif lane_pos < 160:
+            #     lane_cell = 7
+            # elif lane_pos < 400:
+            #     lane_cell = 8
+            # elif lane_pos <= 800:
+            #     lane_cell = 9
+
+            lane_cell = 0
             flag = True
             initial_lane_pos = 6
             current_lane_pos = initial_lane_pos
             count = 0
-            while flag == True  and current_lane_pos <= 800:
+            while flag == True and current_lane_pos <= 800:
                 if lane_pos < current_lane_pos:
                     lane_cell = count
                     flag = False
                 else: 
                     count += 1
                     current_lane_pos += initial_lane_pos + count
+
 
             # finding the lane where the car is located 
             if lane_id == "West2TrafficLight_0" or lane_id == "West2TrafficLight_1" or lane_id == "West2TrafficLight_2":
@@ -205,7 +229,7 @@ class Simulation:
             else:
                 lane_group = -1
 
-            if lane_group >= 0 and lane_group <= 7:
+            if lane_group >= 1 and lane_group <= 7:
                 #car_position = int(str(lane_group) + str(lane_cell))  # composition of the two postion ID to create a number in interval 0-79
                 valid_car = True
 
@@ -213,8 +237,19 @@ class Simulation:
                 cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
                 cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
 
+            elif lane_group == 0:
+                #car_position = lane_cell
+                valid_car = True
+
+                cell_vel_time[lane_group][lane_cell][0] += 1
+                cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
+                cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
+
+            else:
+                valid_car = False  # flag for not detecting cars crossing the intersection or driving away from it
+
         for i in range (0, 8):
-            for j in range (0, 34):
+            for j in range (0,34):
                 if cell_vel_time[i][j][0] > 0:
                     # ci sono macchine nella cella
                     state[i][j][0] = 1 
@@ -249,8 +284,8 @@ class Simulation:
             for i in range (0, 8):
                 for j in range (0, 34):   
                     state[i][j][2] = normalized_times[(i * 34) + j]
-        state = state.flatten()
-        return state
+
+        return state.flatten()
 
 
 

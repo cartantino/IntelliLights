@@ -28,12 +28,9 @@ class TrainModel:
         Build and compile a fully connected deep neural network
         """
         inputs = keras.Input(shape=(self._input_dim,))
-        x = layers.Dense(800, activation='relu')(inputs)
-        x = layers.Dense(800, activation='relu')(x)
-        x = layers.Dense(800, activation='relu')(x)
-        x = layers.Dense(800, activation='relu')(x)
-        # x = layers.Dropout(0.1)(x)
-        x = layers.Dense(800, activation='relu')(x)
+        x = layers.Dense(400, activation='relu')(inputs)
+        x = layers.Dense(400, activation='relu')(x)
+        x = layers.Dense(400, activation='relu')(x)
         x = layers.Dense(400, activation='relu')(x)
         x = layers.Dense(400, activation='relu')(x)
      
