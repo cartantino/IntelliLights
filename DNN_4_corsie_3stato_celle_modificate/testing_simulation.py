@@ -212,6 +212,15 @@ class Simulation:
                 cell_vel_time[lane_group][lane_cell][0] += 1
                 cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
                 cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
+
+            elif lane_group == 0:
+                #car_position = lane_cell
+                valid_car = True
+
+                cell_vel_time[lane_group][lane_cell][0] += 1
+                cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
+                cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
+
             else:
                 valid_car = False  # flag for not detecting cars crossing the intersection or driving away from it
 

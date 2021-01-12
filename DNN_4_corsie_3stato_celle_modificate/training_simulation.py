@@ -281,7 +281,16 @@ class Simulation:
             else:
                 lane_group = -1
 
-            if lane_group >= 0 and lane_group <= 7:
+            if lane_group >= 1 and lane_group <= 7:
+                #car_position = int(str(lane_group) + str(lane_cell))  # composition of the two postion ID to create a number in interval 0-79
+                valid_car = True
+
+                cell_vel_time[lane_group][lane_cell][0] += 1
+                cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
+                cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
+
+            elif lane_group == 0:
+                #car_position = lane_cell
                 valid_car = True
                 cell_vel_time[lane_group][lane_cell][0] += 1
                 cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
