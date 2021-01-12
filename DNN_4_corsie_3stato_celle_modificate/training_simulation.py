@@ -247,7 +247,7 @@ class Simulation:
         for car_id in car_list:
             lane_pos = traci.vehicle.getLanePosition(car_id)
             lane_id = traci.vehicle.getLaneID(car_id)
-            lane_pos = 800 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
+            lane_pos = 799 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
 
             flag = True
             initial_lane_pos = 6
@@ -286,6 +286,8 @@ class Simulation:
                 cell_vel_time[lane_group][lane_cell][0] += 1
                 cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
                 cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
+            else:
+                valid_car = False  # flag for not detecting cars crossing the intersection or driving away from it
 
         for i in range (0, 8):
             for j in range (0, 34):
@@ -323,8 +325,7 @@ class Simulation:
             for i in range (0, 8):
                 for j in range (0, 34):   
                     state[i][j][2] = normalized_times[(i * 34) + j]
-        state = state.flatten()
-        return state
+        return state.flatten()
 
 
     def _replay(self):
