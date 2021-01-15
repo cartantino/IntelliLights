@@ -32,16 +32,8 @@ class TrainModel:
         x = layers.Dense(1200, activation='relu')(x)
         x = layers.Dense(1200, activation='relu')(x)
         x = layers.Dense(1200, activation='relu')(x)
-        x = layers.Dropout(0.1)(x)
         x = layers.Dense(1200, activation='relu')(x)
-        x = layers.Dense(800, activation='relu')(x)
-        x = layers.Dense(800, activation='relu')(x)
-        x = layers.Dropout(0.1)(x)
-        x = layers.Dense(800, activation='relu')(x)
-        x = layers.Dense(400, activation='relu')(x)
-        x = layers.Dense(400, activation='relu')(x)
-        x = layers.Dense(400, activation='relu')(x)
-        x = layers.Dense(400, activation='relu')(x)
+ 
      
         outputs = layers.Dense(self._output_dim, activation='linear')(x)
         model = keras.Model(inputs=inputs, outputs=outputs, name='my_model')
