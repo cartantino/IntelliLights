@@ -364,7 +364,7 @@ class Simulation:
         for car_id in car_list:
             lane_pos = traci.vehicle.getLanePosition(car_id)
             lane_id = traci.vehicle.getLaneID(car_id)
-            lane_pos = 800 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
+            lane_pos = 799 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
 
             flag = True
             initial_lane_pos = 6
@@ -401,7 +401,12 @@ class Simulation:
             if lane_group >= 0 and lane_group <= 7:
                 #car_position = int(str(lane_group) + str(lane_cell))  # composition of the two postion ID to create a number in interval 0-79
                 valid_car = True
-
+                cell_vel_time[lane_group][lane_cell][0] += 1
+                cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
+                cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
+            elif lane_group == 0:
+                #car_position = lane_cell
+                valid_car = True
                 cell_vel_time[lane_group][lane_cell][0] += 1
                 cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
                 cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
@@ -445,7 +450,7 @@ class Simulation:
                 for j in range (0, 34):   
                     state[i][j][2] = normalized_times[(i * 34) + j]
 
-        return state
+        return state.flatten()
 
     def _get_state_2(self):
         """
@@ -461,7 +466,7 @@ class Simulation:
         for car_id in car_list:
             lane_pos = traci.vehicle.getLanePosition(car_id)
             lane_id = traci.vehicle.getLaneID(car_id)
-            lane_pos = 800 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
+            lane_pos = 799 - lane_pos  # inversion of lane pos, so if the car is close to the traffic light -> lane_pos = 0 --- 750 = max len of a road
 
             flag = True
             initial_lane_pos = 6
@@ -503,6 +508,12 @@ class Simulation:
                 cell_vel_time[lane_group][lane_cell][0] += 1
                 cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
                 cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
+            elif lane_group == 0:
+                #car_position = lane_cell
+                valid_car = True
+                cell_vel_time[lane_group][lane_cell][0] += 1
+                cell_vel_time[lane_group][lane_cell][1] += traci.vehicle.getSpeed(car_id)
+                cell_vel_time[lane_group][lane_cell][2] += traci.vehicle.getAccumulatedWaitingTime(car_id)
             else:
                 valid_car = False  # flag for not detecting cars crossing the intersection or driving away from it
 
@@ -543,7 +554,7 @@ class Simulation:
                 for j in range (0, 34):   
                     state[i][j][2] = normalized_times[(i * 34) + j]
 
-        return state
+        return state.flatten()
 
     def _replay(self):
         """
@@ -560,7 +571,7 @@ class Simulation:
             q_s_a_d = self._Model_1.predict_batch(next_states)  # predict Q(next_state), for every sample
 
             # setup training arrays
-            x = np.zeros((len(batch_1), 8, 34, 3))
+            x = np.zeros((len(batch_1), 816))
             y = np.zeros((len(batch_1), self._num_actions))
 
             for i, b in enumerate(batch_1):
@@ -580,7 +591,7 @@ class Simulation:
             q_s_a_d = self._Model_2.predict_batch(next_states)  # predict Q(next_state), for every sample
 
             # setup training arrays
-            x = np.zeros((len(batch_2), 8, 34, 3))
+            x = np.zeros((len(batch_2), 816))
             y = np.zeros((len(batch_2), self._num_actions))
 
             for i, b in enumerate(batch_2):

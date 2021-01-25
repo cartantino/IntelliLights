@@ -27,16 +27,16 @@ class TrainModel:
         """
         Build and compile a fully connected deep neural network
         """
-        model = models.Sequential()
-        model.add(layers.Conv2D(12, (2,2), activation='relu', strides=(1, 2), input_shape=(8, 34, 3)))
-        model.add(layers.Conv2D(16, (2,2), activation='relu', strides=(1, 2)))
-        model.add(layers.Flatten())
-        model.add(layers.Dense(400, activation='relu'))
-        model.add(layers.Dense(400, activation='relu'))
-        model.add(layers.Dense(400, activation='relu'))
-        model.add(layers.Dense(400, activation='relu'))
-        model.add(layers.Dense(self._output_dim, activation='linear'))
-
+        inputs = keras.Input(shape=(self._input_dim,))
+        x = layers.Dense(800, activation='relu')(inputs)
+        x = layers.Dense(800, activation='relu')(x)
+        x = layers.Dense(800, activation='relu')(x)
+        x = layers.Dense(800, activation='relu')(x)
+        # x = layers.Dropout(0.1)(x)
+        x = layers.Dense(800, activation='relu')(x)
+     
+        outputs = layers.Dense(self._output_dim, activation='linear')(x)
+        model = keras.Model(inputs=inputs, outputs=outputs, name='my_model')
         model.compile(loss=losses.mean_squared_error, optimizer=Adam(lr=self._learning_rate))
         return model
 
@@ -49,7 +49,7 @@ class TrainModel:
         """
         # print("Predict one, shape in input = " + str(state.shape))
         # state = np.reshape(state, [1, self._input_dim])
-        state = state.reshape(1, 8 , 34, 3)
+        state = np.reshape(state, [1, self._input_dim])
         return self._model.predict(state)
 
 
@@ -60,7 +60,6 @@ class TrainModel:
         """
         Predict the action values from a batch of states
         """
-        states = states.reshape(self.batch_size, 8 , 34, 3)
         return self._model.predict(states)
 
 
@@ -75,7 +74,6 @@ class TrainModel:
         """
         Save the current model in the folder as h5 file and a model architecture summary as png
         """
-        print(os.path.join(path, 'trained_model_1.h5'))
         self._model.save(os.path.join(path, 'trained_model_1.h5'))
         plot_model(self._model, to_file=os.path.join(path, 'model_structure_1.png'), show_shapes=True, show_layer_names=True)
 
@@ -145,8 +143,7 @@ class TestModel:
         """
         Predict the action values from a single state
         """
-        # state = np.reshape(state, [1, self._input_dim])
-        state = state.reshape(1, 8 , 34, 3)
+        state = np.reshape(state, [1, self._input_dim])
         return self._model.predict(state)
 
 
